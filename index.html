@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Уровень 2 — Переходим через 10</title>
+<style>
+:root{--ink:#24345b;--purple:#7953c8;--yellow:#ffd34e;--red:#ef6b72;--blue:#67a9ef;--green:#43b982;--paper:#fffdf7}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 10% 10%,#e4f6ff,transparent 32%),linear-gradient(135deg,#e8e2ff,#dff5f1);min-height:100vh;padding:20px}
+main{max-width:1050px;margin:auto;background:var(--paper);border:5px solid #a8a0ec;border-radius:28px;box-shadow:0 12px 0 #7771bd,0 20px 45px #59608a44;padding:clamp(16px,3vw,30px)}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(25px,4vw,38px);color:#6447b2}.level{background:#eee8ff;border-radius:20px;padding:10px 16px;font-weight:bold}
+.progress{display:flex;gap:7px;margin:18px 0}.dot{height:9px;flex:1;background:#e6e2f4;border-radius:10px}.dot.on{background:#8b6cdb}
+h2{text-align:center;font-size:clamp(22px,3vw,30px);margin:12px 0}
+.problem{display:flex;justify-content:center;align-items:center;gap:16px;font-size:clamp(36px,7vw,64px);font-weight:900;margin:12px}
+.problem .a{color:#2d83ce}.problem .b{color:#e45f6b}
+.number-line-wrap{max-width:900px;margin:8px auto 18px;padding:8px 12px;background:#f5f8ff;border:2px solid #d5e2f5;border-radius:18px}.number-line{display:block;width:100%;height:auto;overflow:visible}.number-line text{font-family:Arial,sans-serif;font-weight:800;fill:#34466c}.number-line .jump-one{stroke:#2d83ce;fill:none;stroke-width:5;stroke-linecap:round}.number-line .jump-two{stroke:#e45f6b;fill:none;stroke-width:5;stroke-linecap:round}.number-line .jump-label{font-size:26px}.number-line .tick-label{font-size:17px}.instruction{text-align:center;font-size:clamp(17px,2.4vw,23px);font-weight:bold;margin:8px auto 20px;max-width:760px;min-height:32px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:22px;align-items:center;position:relative}
+.house-wrap{background:#f2f7ff;border:3px solid #b7d2f1;border-radius:24px;padding:clamp(20px,3vw,34px);min-height:300px;display:flex;flex-direction:column;justify-content:center}
+.roof{height:58px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;background:#8d72d4;clip-path:polygon(50% 0,100% 100%,0 100%);margin:0 8px 8px;color:white;font-size:30px;font-weight:900}
+.house{display:grid;grid-template-columns:repeat(5,minmax(48px,1fr));gap:10px;padding:12px;background:transparent;border:0;border-radius:0;width:100%}
+.cell{aspect-ratio:1.25;min-height:58px;border:3px solid #b9c7df;border-radius:13px;background:white;display:grid;place-items:center;font-size:clamp(23px,4vw,36px);font-weight:900;color:#a5b0c3;transition:.25s}
+.cell.filled{background:#ffe18a;border-color:#e8b83d;color:#a56812;box-shadow:inset 0 -4px 0 #e8bc55}
+.cell.new{background:#bcebd7;border-color:#45b989;color:#187b55;animation:pop .35s}
+.cell.target{background:#fff8d9;border:3px dashed #f0b52e;animation:emptyPulse .85s ease-in-out infinite;box-shadow:inset 0 0 0 3px #fff}
+@keyframes emptyPulse{0%,100%{box-shadow:0 0 0 0 #ffd34e00;transform:scale(1)}50%{box-shadow:0 0 0 7px #ffd34e88;transform:scale(1.035)}}
+.house-wrap{position:relative}
+.marker-arrow{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:5}
+.marker-arrow path{stroke:#e83f79;stroke-width:9}
+.counter{position:relative;transition:transform .2s,opacity .2s}
+.counter:focus-visible{outline:4px solid #6845c5;outline-offset:3px}
+.counter.needed{
+  animation: neededPulse .85s ease-in-out infinite alternate;
+  outline: 3px solid #ffd43b;
+  outline-offset: 3px;
+  box-shadow: 0 4px 0 #cf5962, 0 0 15px 5px rgba(255,205,45,.65);
+  transform: scale(1.08);
+}
+@keyframes neededPulse{
+  from{filter:brightness(1);transform:scale(1.04)}
+  to{filter:brightness(1.28);transform:scale(1.16)}
+}
+
+.counter.used{opacity:.18;transform:scale(.78)}
+.counter.placeholder{background:transparent;border:3px dashed #b9c7df;box-shadow:none;opacity:1;cursor:default}
+.counter.remaining{animation:neededPulse .65s ease-in-out infinite alternate;outline:4px solid #ffd43b;outline-offset:3px;box-shadow:0 0 0 6px #ffd34e66,0 5px 0 #cf5962}
+.counter.moved{opacity:.22;transform:scale(.82);animation:none;outline:none;box-shadow:none}
+.bridge-question{margin:10px auto 16px;text-align:center;padding:10px;background:#f3efff;border:2px solid #d6c9ff;border-radius:18px;max-width:760px}
+.bridge-prompt{font-size:clamp(18px,2.4vw,23px);font-weight:900;color:#6244ad}
+.house-question-row{display:flex;align-items:center;justify-content:center;gap:clamp(14px,3vw,38px);flex-wrap:wrap}
+.bridge-equation{display:flex;justify-content:center;align-items:center;gap:clamp(8px,1.5vw,18px);font-size:clamp(42px,6vw,72px);font-weight:1000;margin:8px;white-space:nowrap;background:#f3efff;border:3px solid #c8b5ff;border-radius:22px;padding:12px 18px;box-shadow:0 5px 0 #d8ccf7}
+.bridge-equation b:first-child{color:#2d83ce}.bridge-equation b:last-child{color:#259c70}.bridge-equation .unknown{color:#e45f6b;background:#fff;border:2px dashed #e45f6b;border-radius:10px;padding:0 14px}
+.split-note{text-align:center;font-size:20px;font-weight:900;color:#6547b3;margin:10px}.split-note b{display:inline-grid;place-items:center;background:#fff0b8;color:#9a6200;border-radius:9px;padding:3px 10px}
+.under-picture-equation{font-size:clamp(34px,5vw,48px);font-weight:900;color:#6244ad;margin:14px auto 4px;display:flex;justify-content:center;align-items:center;gap:10px}
+.under-picture-equation input{width:76px;font-size:40px;text-align:center;border:3px solid #d5c8f6;border-radius:12px;color:#6244ad;background:white}
+.talk-to-picture{font-size:18px;font-weight:bold;color:#47765f}
+.full-example{display:none;margin:18px auto;padding:18px;background:#fff7df;border:3px solid #efcf70;border-radius:20px;text-align:center}
+.full-example.show{display:block}
+.full-equation{font-size:clamp(36px,6vw,52px);font-weight:900;color:#2e875e}
+.full-decomposition{font-size:20px;font-weight:bold;margin-top:8px;color:#6244ad}
+.result-stage{display:none;margin:18px auto;padding:18px;border:3px solid #9ed9bf;border-radius:22px;background:#f0fff7;text-align:center}
+.result-row{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin:16px}
+.ten-house{background:white;border:3px solid #65b58e;border-radius:15px;padding:8px 12px;font-size:23px;font-weight:900;color:#168052}
+.mini-grid{display:grid;grid-template-columns:repeat(5,25px);gap:3px;margin-top:6px}.mini-grid i{width:25px;height:25px;border-radius:5px;background:#f5c94d;border:1px solid #d9a72b}
+.plus-sign{font-size:34px;font-weight:900}.three-slots{display:flex;gap:8px}.slot{width:48px;height:48px;border:3px dashed #d89a4c;border-radius:9px;background:#fff8e9}.slot.filled{border:2px solid #d94f5b;background:#f47c82;box-shadow:inset 0 0 0 5px #ffc5c8}
+.result-hint{font-size:18px;font-weight:bold}button.action.pulse{animation:neededPulse .8s ease-in-out infinite alternate;outline:3px solid #ffdf63;outline-offset:5px}
+.move-chip{position:fixed;z-index:1000;width:48px;height:48px;box-sizing:border-box;border-radius:9px;background:linear-gradient(145deg,#ff9b9f,#ec626d);border:2px solid #d94f5b;box-shadow:inset 0 0 0 5px #ffc5c8,0 4px 0 #cf5962;pointer-events:none;will-change:transform;transform-origin:center center}
+.marker-arrow path{fill:none;stroke:#ef4f87;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 0 white) drop-shadow(0 0 4px #ffd34e)}
+.marker-arrow .arrowhead{stroke-width:9}
+
+@keyframes pop{50%{transform:scale(1.09)}}
+.side{background:#fff4e7;border:3px solid #f5cf91;border-radius:22px;padding:16px;text-align:center}
+.side h3{margin:0 0 10px;font-size:20px}
+.counters{display:flex;justify-content:center;gap:8px;flex-wrap:nowrap;min-height:64px;align-items:center}
+.counter{width:48px;height:48px;border-radius:9px;display:grid;place-items:center;background:#f47c82;color:white;font-size:25px;font-weight:900;box-shadow:0 4px 0 #cf5962;cursor:pointer;border:2px solid #d94f5b}
+.counter:disabled{opacity:.35;cursor:default}
+.side p{font-size:16px;line-height:1.35}
+.actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:22px 0 4px}
+button.action{border:0;border-radius:18px;padding:15px 25px;font-size:20px;font-weight:900;background:#ffd34e;color:#694b00;box-shadow:0 6px 0 #dca92b;cursor:pointer}
+button.action:disabled{opacity:.45;cursor:default}
+.feedback{min-height:34px;text-align:center;font-size:19px;font-weight:bold;margin-top:10px}
+.answer{display:none;text-align:center;margin:15px auto;padding:18px;background:#ecfbf4;border:3px solid #75cda5;border-radius:20px;max-width:500px}
+.answer input{width:100px;font-size:34px;text-align:center;border:3px solid #9eb5cf;border-radius:12px;padding:8px;color:var(--ink)}
+.answer.good{display:block}.answer input.bad{border-color:#e64e5a;background:#fff0f0;animation:shake .25s}
+.answer input.correct{border-color:#39ad7b;background:#e5fff2}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+.intro-level{padding:4px 0 22px;text-align:center}
+.intro-top h1{margin:8px 0;color:#6447b2;font-size:clamp(28px,4vw,40px)}
+.intro-badge{display:inline-block;background:#eee8ff;color:#6244ad;padding:9px 16px;border-radius:20px;font-weight:900}
+.intro-problem{display:flex;justify-content:center;align-items:center;gap:clamp(10px,2vw,22px);font-size:clamp(40px,7vw,66px);font-weight:1000;margin:12px 0 4px}
+.blue-num{color:#2d83ce}.pink-num{color:#e45f6b}.green-num{color:#259c70}
+.intro-instruction{font-size:clamp(18px,2.6vw,24px);font-weight:900;margin:8px auto 18px;min-height:30px}
+.intro-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:20px;align-items:center}
+.intro-house-panel{background:#f2f7ff;border:3px solid #b7d2f1;border-radius:24px;padding:20px 24px}
+.intro-roof{height:58px;display:grid;place-items:end center;padding-bottom:4px;background:#8d72d4;clip-path:polygon(50% 0,100% 100%,0 100%);margin:0 8px 8px;color:white;font-size:30px;font-weight:900}
+.intro-house{display:grid;grid-template-columns:repeat(5,minmax(35px,1fr));gap:9px;padding:10px}
+.intro-cell{aspect-ratio:1.25;min-height:54px;border:3px solid #b9c7df;border-radius:12px;background:white;display:grid;place-items:center;font-size:28px;font-weight:900;color:#a56812}
+.intro-cell.full{background:#ffe18a;border-color:#e8b83d}
+.intro-cell.target{border:3px dashed #e2b23c;background:#fff8d9}
+.intro-cell.completed{background:#bcebd7;border-color:#45b989;color:#187b55;animation:pop .35s}
+.intro-pieces-panel{display:grid;gap:18px;background:#fff4e7;border:3px solid #f5cf91;border-radius:22px;padding:18px}
+.piece-group{display:grid;gap:8px;justify-items:center}.piece-group>b{font-size:24px}.piece-row{display:flex;gap:7px;min-height:48px;align-items:center}
+.piece{width:42px;height:42px;border-radius:9px;border:2px solid;cursor:pointer}
+.pink-piece{background:#f47caa;border-color:#d94f83;box-shadow:0 4px 0 #c94b78}
+.green-piece{background:#75d5ad;border-color:#36a879;box-shadow:0 4px 0 #27865e;animation:neededPulse .8s ease-in-out infinite alternate}
+.piece:disabled{opacity:.18;cursor:default;animation:none}
+.piece-group small{font-size:14px;font-weight:bold;color:#56617b}
+.intro-equations{display:none;justify-content:center;gap:18px;flex-wrap:wrap;margin:18px auto 8px}
+.intro-equations.show{display:flex}.intro-step{font-size:clamp(26px,4vw,38px);font-weight:900;background:#f3efff;border:3px solid #d6c9ff;border-radius:18px;padding:10px 18px;color:#6244ad}
+.intro-step strong{color:#168052}.intro-conclusion{display:none;max-width:780px;margin:12px auto;padding:14px 18px;background:#fff7df;border:3px solid #efcf70;border-radius:18px;font-size:clamp(17px,2.3vw,22px);font-weight:900}
+.intro-conclusion.show{display:block}.intro-decomposition{margin-top:8px;color:#6244ad;font-size:clamp(19px,3vw,27px)}.intro-actions{display:flex;justify-content:center;margin:18px 0 4px}.intro-actions button{min-width:90px}
+
+.compare-houses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+.compare-card{position:relative;background:#f8f7ff;border:3px solid #c9b9ee;border-radius:22px;padding:14px;text-align:center;overflow:hidden}
+.compare-heading{font-size:clamp(34px,5vw,52px);font-weight:1000;color:#e45f8e;margin:0 0 8px}
+.compare-card .intro-house-panel{padding:14px 16px}
+.compare-card .intro-house{gap:6px;padding:8px}
+.compare-card .intro-cell{min-height:clamp(34px,5vw,54px);aspect-ratio:1.2;font-size:clamp(17px,3vw,27px)}
+.flying-row{display:flex;justify-content:center;gap:9px;min-height:54px;margin:16px 0 4px;align-items:center}
+.fly-piece,.outside-piece{display:inline-block;width:clamp(30px,4vw,42px);height:clamp(30px,4vw,42px);border-radius:9px;background:#f47caa;border:2px solid #d94f83;box-shadow:0 4px 0 #c94b78}
+.fly-piece{opacity:1;transform:translateY(0);cursor:pointer;pointer-events:auto}
+.fly-piece.in-house{opacity:0;transform:scale(.3);pointer-events:none}
+.fly-piece.bounced{animation:bounceOut .65s ease-out forwards}
+@keyframes bounceOut{0%{opacity:1;transform:translateY(0) scale(1)}55%{opacity:1;transform:translateY(-55px) translateX(18px) scale(1.1)}100%{opacity:1;transform:translateY(-8px) translateX(30px) scale(1)}}
+.compare-caption{font-size:16px;font-weight:800;min-height:24px}.fly-piece:focus-visible{outline:4px solid #6845c5;outline-offset:4px}.fly-piece.used{visibility:hidden;pointer-events:none}
+.outside-piece{display:none;margin:8px auto 0;animation:bounceOut .65s ease-out forwards}
+.outside-piece.show{display:block}
+#tryTwo.house-flash .intro-house-panel{animation:wholeHouseFlash .55s ease-in-out 3}
+@keyframes wholeHouseFlash{0%,100%{box-shadow:0 0 0 0 #ffd34e00;filter:brightness(1)}50%{box-shadow:0 0 0 10px #ffd34eaa;filter:brightness(1.18)}}
+@media(max-width:700px){.compare-houses{grid-template-columns:1fr}.compare-card .intro-house-panel{padding:10px}.compare-card .intro-house{gap:5px}}
+@media(max-width:700px){.intro-layout{grid-template-columns:1fr}.intro-house-panel{padding:12px}.intro-house{gap:6px}.intro-cell{min-height:45px}}
+
+@media(max-width:700px){.house-question-row{flex-direction:column;gap:8px}.bridge-equation{font-size:42px}.layout{grid-template-columns:1fr}.side{max-width:none}.house-wrap{padding:12px}.house{gap:6px}.cell{border-width:2px}}
+
+/* Responsive refinements */
+@media(max-width:900px){body{padding:12px}main{border-width:4px;border-radius:22px;padding:clamp(12px,2.5vw,22px)}.layout,.intro-layout{grid-template-columns:minmax(0,1fr)}.side{width:100%}.counters{flex-wrap:wrap}.marker-arrow{display:none!important}}
+@media(max-width:520px){body{padding:6px}main{padding:10px;border-radius:16px;border-width:3px;box-shadow:0 6px 0 #7771bd,0 12px 25px #59608a33}header{justify-content:center;text-align:center}h1{font-size:clamp(22px,7vw,30px)}.level{font-size:12px;padding:7px 10px}.problem{gap:9px;font-size:clamp(30px,10vw,46px);margin:8px 0}.number-line-wrap{padding:4px;margin:6px auto 12px;overflow:hidden}.house-wrap{min-height:0;padding:10px}.roof{height:42px;font-size:24px}.house{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:6px}.cell{min-width:0;min-height:0;aspect-ratio:1.1;border-width:2px;border-radius:8px;font-size:clamp(18px,6vw,27px)}.side{padding:12px}.counter{width:42px;height:42px;font-size:21px}.bridge-equation{font-size:clamp(30px,8vw,42px);padding:8px 10px;gap:6px;white-space:normal;flex-wrap:wrap}.under-picture-equation{font-size:clamp(26px,7vw,38px);flex-wrap:wrap}.under-picture-equation input{width:60px;font-size:30px}.actions{gap:8px;margin:14px 0 4px}button.action{padding:12px 16px;font-size:17px;max-width:100%}.result-row{gap:8px;flex-wrap:wrap}.mini-grid{grid-template-columns:repeat(5,19px)}.mini-grid i{width:19px;height:19px}#columnModule{padding:0!important}#columnFrame{height:1250px!important}}
+@media(max-width:360px){.house{gap:3px;padding:4px}.cell{border-radius:6px;font-size:18px}.instruction{font-size:16px}.side p{font-size:14px}.counter{width:38px;height:38px}}
+</style></head>
+<body><main>
+<div id="level2Content">
+<header><h1>Математическая лаборатория</h1><div class="level">ОБУЧЕНИЕ · ПЕРЕХОД ЧЕРЕЗ 10</div></header>
+<div class="progress"><div class="dot on"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+<h2>Построим полный десяток из кирпичиков!</h2>
+<div class="problem"><span class="a" id="first">8</span><span>+</span><span class="b" id="second">5</span><span>= ?</span></div>
+<div class="number-line-wrap"><svg id="numberLine" class="number-line" viewBox="0 0 1000 150" role="img" aria-label="Числовая прямая от 0 до 20"></svg></div>
+<div class="bridge-question" id="bridgeQuestion">
+ <div class="bridge-prompt" aria-label="Сколько кирпичиков нужно добавить?"></div>
+ 
+ <div class="split-note" id="splitNote" style="display:none"><b>8 + 2 = 10</b> &nbsp; <b>5 = 2 + 3</b></div>
+</div>
+<div class="instruction" id="instruction" aria-live="polite"></div>
+<div class="layout">
+ <section class="house-wrap"><div class="roof">10</div><div class="house-question-row"><div class="house" id="house"></div></div></section>
+ <aside class="side"><h3 id="sideTitle" aria-label="Пять кирпичиков"></h3><div class="counters" id="counters"></div><p id="sideText"></p></aside>
+ <svg class="marker-arrow" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"><path d="M850 175 C790 185 735 205 690 235 S610 275 555 285"/><path class="arrowhead" d="M605 250 L555 285 L615 300"/></svg>
+</div>
+<section class="result-stage" id="resultStage"><div class="result-row"><div class="ten-house"><span>10</span><div class="mini-grid" id="miniGrid"></div></div><span class="plus-sign">+</span><div class="three-slots" id="threeSlots"><div class="slot"></div><div class="slot"></div><div class="slot"></div></div></div>
+ <div class="under-picture-equation" id="underPictureEquation">10 + 2 = <span id="finalNumber"></span></div>
+</section>
+<div class="feedback" id="feedback" aria-live="polite"></div>
+<div class="actions"><button class="action next-arrow" id="next" disabled aria-label="Следующий шаг">➜</button></div>
+
+<section class="full-example" id="fullExample"><h2>Весь пример</h2><div class="full-equation">8 + 5 = 13</div><div class="full-decomposition">8 + 5 = 8 + 2 + 3 = 10 + 3 = 13</div></section>
+<section id="practicePanel" class="full-example" style="display:none">
+ <h2 id="practiceTitle">Пример 1 из 6</h2>
+ <div id="practiceMessage" class="full-decomposition">Выполни ещё пять примеров таким же способом.</div>
+ <div class="actions">
+  <button class="action" id="practiceNext" style="display:none">Следующий пример ➜</button>
+  <button class="action" id="goColumn" style="display:none">Перейти к сложению в столбик ➜</button>
+ </div>
+</section>
+</div>
+<section id="columnModule" style="display:none;max-width:1100px;margin:28px auto;padding:0 14px">
+ <div style="text-align:center;margin:18px 0 14px">
+  <h2 style="margin-bottom:6px">Теперь потренируемся складывать в столбик!</h2>
+  <p style="margin:0;color:#64748b">Единицы складываем с единицами, десятки — с десятками.</p>
+ </div>
+ <iframe id="columnFrame" sandbox="allow-scripts" title="Тренажёр сложения в столбик" style="width:100%;height:900px;border:0;border-radius:18px;background:#f4f2eb" loading="lazy"></iframe>
+</section>
+<section id="courseFinish" style="display:none;max-width:760px;margin:35px auto;padding:32px 20px;text-align:center;background:#fff;border-radius:24px;box-shadow:0 12px 35px #30435a12">
+ <div style="font-size:64px">🏆</div>
+ <h2>Математическая миссия выполнена!</h2>
+ <p>Ты прошёл оба этапа: переход через десяток и сложение в столбик.</p>
+ <div style="font-size:24px;font-weight:800;margin:18px 0">Отличная работа!</div>
+ <button class="action" id="restartCourse">Пройти ещё раз ↻</button>
+</section>
+</main>
+<script>
+const examples = [
+ {a:8,b:5}, // 8 needs 2, then 3 remain
+ {a:7,b:6}, // 3 then 3
+ {a:9,b:4}, // 1 then 3
+ {a:6,b:7}, // 4 then 3
+ {a:8,b:4}, // 2 then 2
+ {a:7,b:5}  // 3 then 2
+];
+let exampleIndex=0, a=8, b=5, need=2, rest=3;
+const house=document.getElementById('house'), counters=document.getElementById('counters');
+const instruction=document.getElementById('instruction'), feedback=document.getElementById('feedback');
+const next=document.getElementById('next'), sideTitle=document.getElementById('sideTitle'), sideText=document.getElementById('sideText');
+let filled=a, used=0, stage=0, remainingPlaced=0, animating=false;
+function renderNumberLine(){
+ const svg=document.getElementById('numberLine');
+ const x=n=>40+n*46; // 0..20 across the full line
+ let out='<defs><marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#2d83ce" stroke-width="1.5"/></marker><marker id="arrowPink" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="none" stroke="#e45f6b" stroke-width="1.5"/></marker></defs>';
+ out+=`<line x1="${x(0)}" y1="100" x2="${x(20)}" y2="100" stroke="#64748b" stroke-width="4"/>`;
+ for(let i=0;i<=20;i++){out+=`<line x1="${x(i)}" y1="91" x2="${x(i)}" y2="109" stroke="#64748b" stroke-width="2"/><text class="tick-label" x="${x(i)}" y="132" text-anchor="middle">${i}</text>`;}
+ out+=`<path class="jump-one" marker-end="url(#arrowBlue)" d="M${x(a)} 78 Q${(x(a)+x(10))/2} 18 ${x(10)} 78"/><text class="jump-label" x="${(x(a)+x(10))/2}" y="30" text-anchor="middle" fill="#2d83ce">+${need}</text>`;
+ out+=`<path class="jump-two" marker-end="url(#arrowPink)" d="M${x(10)} 70 Q${(x(10)+x(a+b))/2} 5 ${x(a+b)} 70"/><text class="jump-label" x="${(x(10)+x(a+b))/2}" y="18" text-anchor="middle" fill="#e45f6b">+${rest}</text>`;
+ out+=`<circle cx="${x(a)}" cy="100" r="7" fill="#2d83ce"/><circle cx="${x(10)}" cy="100" r="7" fill="#43b982"/><circle cx="${x(a+b)}" cy="100" r="7" fill="#e45f6b"/>`;
+ svg.innerHTML=out;
+}
+function updateProblem(){
+ a=examples[exampleIndex].a;b=examples[exampleIndex].b;need=10-a;rest=b-need;
+ document.getElementById('first').textContent=a;document.getElementById('second').textContent=b;
+ renderNumberLine();
+ document.querySelector('.full-equation').textContent=`${a} + ${b} = ${a+b}`;
+ document.querySelector('.full-decomposition').textContent=`${a} + ${b} = ${a} + ${need} + ${rest} = 10 + ${rest} = ${a+b}`;
+ document.getElementById('practiceTitle').textContent=`Пример ${exampleIndex+1} из 6`;
+ const equation=document.getElementById('underPictureEquation');
+ if(equation) equation.innerHTML=`10 + ${rest} = <span id="finalNumber"></span>`;
+
+ document.getElementById('practiceMessage').textContent=exampleIndex===0?'Выполни ещё пять примеров таким же способом.':'';
+}
+function drawMarkerArrow(){
+ const svg=document.querySelector('.marker-arrow');
+ const layout=document.querySelector('.layout');
+ const firstCounter=counters.querySelector('.counter:not(.used):not(:disabled)');
+ const target=house.querySelectorAll('.cell')[a];
+ if(!svg||!layout||!firstCounter||!target||stage!==0||filled!==a){if(svg)svg.style.display='none';return;}
+ const base=layout.getBoundingClientRect(),from=firstCounter.getBoundingClientRect(),to=target.getBoundingClientRect();
+ const sx=from.left-base.left+from.width/2, sy=from.top-base.top+from.height/2;
+ const ex=to.left-base.left+to.width/2, ey=to.top-base.top+to.height/2;
+ svg.setAttribute('viewBox',`0 0 ${layout.clientWidth} ${layout.clientHeight}`);
+ svg.style.display='block';
+ const path=svg.querySelector('path:not(.arrowhead)');
+ const head=svg.querySelector('.arrowhead');
+ const dx=ex-sx,dy=ey-sy;
+ path.setAttribute('d',`M ${sx} ${sy} Q ${sx+dx*.55} ${sy+dy*.15-35} ${ex} ${ey}`);
+ head.setAttribute('d',`M ${ex-17} ${ey-13} L ${ex} ${ey} L ${ex-17} ${ey+13}`);
+}
+function drawHouse(){
+ const existing=house.querySelectorAll('.cell');
+ if(existing.length!==10){
+  house.innerHTML='';
+  for(let i=0;i<10;i++){
+   const cell=document.createElement('div');
+   cell.className='cell';
+   house.append(cell);
+  }
+ }
+ const cells=house.querySelectorAll('.cell');
+ for(let i=0;i<10;i++){
+  const cell=cells[i];
+  cell.className='cell';
+  if(i<filled) cell.classList.add('filled');
+  if(stage===0 && i>=filled) cell.classList.add('target');
+  cell.textContent=i<filled?'●':'';
+ }
+}
+function drawCounters(){
+ counters.innerHTML='';
+ for(let i=0;i<b;i++){
+  let btn=document.createElement('button');
+  btn.className='counter'+(i<used?' used':'')+(i>=used && i<need?' needed':'');
+  btn.setAttribute('aria-label',i<need?'Кирпичик для десятка':'Оставшийся кирпичик');
+  btn.disabled=i<used;
+  btn.onclick=()=>moveCounter(btn);
+  counters.append(btn);
+ }
+}
+function resetExample(){
+ filled=a;used=0;stage=0;remainingPlaced=0;animating=false;
+ document.getElementById('splitNote').style.display='none';
+ document.getElementById('resultStage').style.display='none';
+ document.getElementById('fullExample').classList.remove('show');
+ document.getElementById('finalNumber').textContent='';
+ document.getElementById('threeSlots').innerHTML='';
+ for(let i=0;i<rest;i++){let slot=document.createElement('div');slot.className='slot';document.getElementById('threeSlots').append(slot);}
+ next.style.display='';next.disabled=true;next.classList.remove('pulse');
+ feedback.textContent='';instruction.textContent='';sideTitle.textContent='';sideText.textContent='';
+ drawHouse();drawCounters();
+}
+function moveCounter(button){
+ if(stage!==0||animating||used>=need||button.disabled)return;
+ animating=true;
+ const target=house.querySelectorAll('.cell')[a+used];
+ const from=button.getBoundingClientRect(),to=target.getBoundingClientRect();
+ const chip=button.cloneNode(false);chip.className='move-chip';
+ chip.style.left=(from.left+(from.width-48)/2)+'px';chip.style.top=(from.top+(from.height-48)/2)+'px';
+ document.body.append(chip);button.disabled=true;button.style.visibility='hidden';
+ const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top+to.height/2-(from.top+from.height/2);
+ chip.animate([{transform:'translate3d(0,0,0) scale(1)'},{transform:`translate3d(${dx*.72}px,${dy*.72}px,0) scale(.9)`,offset:.78},{transform:`translate3d(${dx}px,${dy}px,0) scale(.9)`}],{duration:800,easing:'cubic-bezier(.22,.75,.25,1)',fill:'forwards'}).onfinish=()=>{
+  chip.remove();used++;filled++;animating=false;drawHouse();drawCounters();drawMarkerArrow();
+  if(used===need){
+   document.getElementById('splitNote').innerHTML=`<b>${a} + ${need} = 10</b> &nbsp; <b>${b} = ${need} + ${rest}</b>`;
+   document.getElementById('splitNote').style.display='block';
+   next.disabled=false;next.classList.add('pulse');
+  }
+ };
+}
+function moveRemaining(button){
+ if(stage!==1||animating||remainingPlaced>=rest||button.disabled)return;
+ animating=true;
+ const slot=document.querySelectorAll('#threeSlots .slot')[remainingPlaced];
+ const from=button.getBoundingClientRect(),to=slot.getBoundingClientRect();
+ const chip=button.cloneNode(false);chip.className='move-chip';
+ chip.style.left=(from.left+(from.width-48)/2)+'px';chip.style.top=(from.top+(from.height-48)/2)+'px';
+ document.body.append(chip);button.disabled=true;button.style.visibility='hidden';
+ const dx=to.left+to.width/2-(from.left+from.width/2),dy=to.top+to.height/2-(from.top+from.height/2);
+ chip.animate([{transform:'translate(0,0)'},{transform:`translate(${dx}px,${dy}px)`}],{duration:700,easing:'cubic-bezier(.2,.75,.25,1)',fill:'forwards'}).onfinish=()=>{
+  chip.remove();button.classList.add('moved');button.classList.remove('remaining');button.disabled=true;slot.classList.add('filled');remainingPlaced++;animating=false;
+  if(remainingPlaced===rest){
+   feedback.textContent='';document.getElementById('finalNumber').textContent=String(a+b);
+   document.getElementById('resultStage').querySelector('.under-picture-equation').innerHTML=`10 + ${rest} = <span id="finalNumber">${a+b}</span>`;
+   document.getElementById('fullExample').classList.add('show');
+   document.getElementById('practicePanel').style.display='block';
+   document.getElementById('practiceNext').style.display=exampleIndex<examples.length-1?'inline-block':'none';
+   document.getElementById('practiceMessage').textContent=exampleIndex===examples.length-1?'Все шесть примеров выполнены!':''; 
+   if(exampleIndex===examples.length-1) document.getElementById('goColumn').style.display='inline-block';
+   document.getElementById('practiceTitle').textContent=`Пример ${exampleIndex+1} из 6`;
+   document.querySelectorAll('.progress .dot')[2].classList.add('on');
+   document.getElementById('resultStage').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+ };
+}
+drawHouse();drawCounters();updateProblem();drawMarkerArrow();
+next.onclick=()=>{
+ if(stage!==0||used!==need)return;
+ stage=1;next.classList.remove('pulse');next.style.display='none';drawHouse();
+ document.querySelector('.progress .dot:nth-child(2)').classList.add('on');
+ counters.innerHTML='';
+ for(let i=0;i<b;i++){
+  const btn=document.createElement('button');
+  if(i<need){btn.className='counter moved';btn.disabled=true;btn.setAttribute('aria-label','Уже перенесённый кирпичик');}
+  else{btn.className='counter remaining';btn.setAttribute('aria-label','Оставшийся кирпичик '+(i-need+1));btn.onclick=()=>moveRemaining(btn);}
+  counters.append(btn);
+ }
+ document.getElementById('resultStage').style.display='block';
+ document.getElementById('miniGrid').innerHTML='<i></i>'.repeat(10);
+ document.getElementById('threeSlots').innerHTML='';
+ for(let i=0;i<rest;i++){const slot=document.createElement('div');slot.className='slot';document.getElementById('threeSlots').append(slot);}
+ document.getElementById('resultStage').scrollIntoView({behavior:'smooth',block:'center'});
+};
+window.addEventListener('resize',drawMarkerArrow);
+document.getElementById('practiceNext').onclick=()=>{
+ if(exampleIndex>=examples.length-1)return;
+ exampleIndex++;updateProblem();resetExample();
+ window.scrollTo({top:0,behavior:'smooth'});drawMarkerArrow();
+};
+
+const columnDocument = "<!doctype html>\n<html lang=\"ru\">\n<head>\n<meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Математическая тетрадь — 12 + 5</title>\n<style>\n*{box-sizing:border-box}body{margin:0;background:#d8efff;font-family:\"Trebuchet MS\",Arial,sans-serif;color:#17436b}\n.scene{min-height:100vh;padding:22px;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 15% 10%,#fff5c9 0 7%,transparent 23%),linear-gradient(135deg,#dff4ff,#fff3df)}\n.notebook{position:relative;width:min(1500px,100%);min-height:820px;padding:34px 30px 95px;border:9px solid #9bc8ed;border-radius:42px;background-color:#fffefb;background-image:linear-gradient(#c8e0f4 2px,transparent 2px),linear-gradient(90deg,#c8e0f4 2px,transparent 2px);background-size:38px 38px;box-shadow:0 18px 0 #6da9d6,0 28px 55px #5286a555;overflow:hidden}\n.rings{position:absolute;top:-17px;left:5%;right:5%;height:45px;display:flex;justify-content:space-between;z-index:5}.rings i{width:24px;height:55px;border:8px solid #246ca8;border-bottom-width:5px;border-radius:18px;background:linear-gradient(90deg,#9ddcff,#fff,#2674b4);box-shadow:0 3px 3px #17436b}\n.layout{display:grid;grid-template-columns:250px 310px minmax(440px,1fr) 170px;gap:18px;align-items:center;min-height:660px}\n.kid{align-self:end;text-align:center;position:relative;z-index:2}.boy{font-size:170px;line-height:1;filter:drop-shadow(0 8px 3px #7775)}.kid .speech{background:#fff;border:3px solid #a9d3ef;border-radius:22px;padding:10px;font-weight:900;color:#376789;font-size:17px;box-shadow:0 5px 0 #d0e4f1}\n.column-area{display:flex;justify-content:center;align-items:center}.column{display:grid;grid-template-columns:48px 104px 104px;grid-template-rows:52px 102px 102px 9px 108px;align-items:center;justify-items:center;padding:15px;background:#ffffffc9;border:4px solid #c2e0f5;border-radius:25px;box-shadow:0 8px 0 #d2e7f5}\n.colhead{font-size:15px;font-weight:1000;color:#5682a4}.colhead.blue{color:#1478c4}.colhead.red{color:#e34b53}\n.op{font-size:62px;font-weight:1000;color:#176eb3}.digit{width:88px;height:88px;border-radius:17px;display:grid;place-items:center;font-size:76px;font-weight:1000;box-shadow:inset 0 3px 0 #fff9,0 4px 0 #0001}\n.blue{background:#e0f1ff;color:#126eb6;border:3px solid #91c9ef}.red{background:#ffe7e5;color:#e34a50;border:3px solid #f5aaa9}.empty{background:#f8fcff;border:3px dashed #b6d8ee}\n.line{grid-column:2/4;width:100%;height:8px;background:#245e8d;border-radius:8px}\n.answer{transition:.3s}.answer.hidden-digit{color:transparent;opacity:.22}.answer.show{color:inherit;opacity:1;box-shadow:0 0 0 5px #ffe06b,0 0 25px #ffcf39}\n.input-prompt{\n grid-column:3;grid-row:5;z-index:5;\n width:88px;height:88px;min-width:88px;min-height:88px;\n box-sizing:border-box;margin:0;padding:0;\n display:grid;place-items:center;\n border:4px solid #fff1a8;border-radius:18px;\n background:linear-gradient(145deg,#fff18a 0%,#ffd12e 58%,#ffbd16 100%);\n color:#805000;font-size:42px;font-weight:1000;\n box-shadow:inset 0 4px 0 #ffffffbb,0 6px 0 #d89a00,0 0 0 3px #f1bd35,0 9px 18px #d99a1744;\n cursor:pointer;animation:promptPulse 1.2s ease-in-out infinite alternate;\n transition:transform .16s ease,opacity .2s\n}\n.input-prompt:hover{transform:scale(1.02)}.input-prompt:active{transform:translateY(3px);box-shadow:0 2px 0 #d99a17}.input-prompt.moving{\n grid-column:2;\n background:linear-gradient(145deg,#fff18a 0%,#ffd12e 58%,#ffbd16 100%);\n border-color:#fff1a8;color:#805000;\n box-shadow:inset 0 4px 0 #ffffffbb,0 6px 0 #d89a00,0 0 0 3px #f1bd35,0 9px 18px #d99a1744\n}\n@keyframes promptPulse{from{filter:brightness(1)}to{filter:brightness(1.08);box-shadow:inset 0 3px 0 #fff,0 5px 0 #d99a17,0 0 0 7px #ffe36b55}}\n.steps{display:grid;gap:20px;align-self:stretch;padding:15px 0}\n.step-panel{position:relative;border:5px solid #f4b8d0;border-radius:35px;background:linear-gradient(145deg,#fff8fb,#ffeaf2);padding:18px 18px 16px;box-shadow:0 8px 0 #efcfdf;transition:.3s}\n.step-panel.tens{border-color:#9acdf0;background:linear-gradient(145deg,#f5fbff,#e4f3ff);box-shadow:0 8px 0 #c7e2f4}\n.step-panel.inactive{opacity:.48;filter:saturate(.65)}\n.step-panel.active{opacity:1;filter:none;animation:panelGlow 1.15s infinite alternate}\n.step-title{display:flex;align-items:center;gap:13px;font-size:23px;font-weight:1000;margin-bottom:16px;color:#174c7a}\n.num{width:55px;height:55px;border-radius:50%;background:#ffdc43;border:5px solid white;box-shadow:0 0 0 3px #f2b92e,0 0 20px #ffdc43;display:grid;place-items:center;font-size:35px;color:#644900;flex:none}\n.units-demo{display:flex;align-items:center;justify-content:center;gap:12px;border:5px solid #ffcf48;border-radius:100px;padding:13px 8px;background:white;box-shadow:0 0 0 4px #fff0a8,0 0 22px #ffd84e}\n.squares{display:flex;gap:5px;justify-content:center;flex-wrap:nowrap}.sq{width:35px;height:35px;border-radius:9px;background:linear-gradient(145deg,#ff8c88,#e33e49);border:2px solid #d83a43;box-shadow:0 4px 0 #b92e38}\n.plus{font-size:39px;font-weight:1000;color:#176eb3}.arrow{font-size:44px;color:#e94850;text-align:center;line-height:1.05;margin:2px}.sum-squares{display:flex;justify-content:center;gap:5px;border:4px solid #ffda50;border-radius:18px;background:white;padding:8px;box-shadow:0 0 18px #ffd94b}\n.formula{font-size:28px;font-weight:1000;text-align:center;color:#d83d48;margin-top:10px}\n.ten-demo{display:flex;align-items:center;justify-content:center;gap:9px;padding:8px 2px;flex-wrap:wrap}.ten-demo .ten-stack{transform:scale(.82);transform-origin:center}\n.ten-stack{display:grid;grid-template-rows:repeat(10,10px);gap:2px;padding:6px;border:4px solid #ffd64d;border-radius:14px;background:white;box-shadow:0 0 17px #ffdc56}\n.ten-stack i{width:30px;height:10px;border-radius:3px;background:linear-gradient(90deg,#64c4f6,#1679c5);border:1px solid #1769a8}\n.zero-box{width:65px;height:65px;border:4px dashed #4798d1;border-radius:14px;background:white;display:grid;place-items:center;font-size:43px;font-weight:1000;color:#1675bd}\n.ten-formula{text-align:center;font-size:19px;font-weight:1000;color:#176eb3;margin-top:9px}\n.robot{align-self:end;text-align:center;font-size:110px;filter:drop-shadow(0 7px 4px #7775)}\n.footer{position:absolute;bottom:18px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:28px}\n.next{width:280px;height:85px;border:5px solid white;border-radius:28px;background:linear-gradient(#ffe95b,#ffb900);box-shadow:0 7px 0 #d58a00,0 0 20px #ffd84b;display:grid;place-items:center;font-size:62px;color:#fff;text-shadow:0 3px #c47a00;cursor:pointer}\n.dots{display:flex;gap:13px}.dot{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid #cbd6dd}.dot.on{background:#ffcf36;border-color:#fff;box-shadow:0 0 0 3px #efb51e}\n.final-banner{position:absolute;left:30px;bottom:22px;background:#fff;border:5px solid #ffda45;border-radius:24px;padding:9px 24px;font-size:39px;font-weight:1000;color:#176eb3;box-shadow:0 0 18px #ffd84b;display:none}.final-banner b{color:#e34a50}\n@keyframes panelGlow{to{box-shadow:0 8px 0 #efcfdf,0 0 30px #ffcf45;transform:translateY(-2px)}}\n@media(max-width:1100px){.layout{grid-template-columns:150px 260px 1fr;}.robot{display:none}.boy{font-size:120px}.column{transform:scale(.85)}}\n@media(max-width:760px){.scene{padding:8px}.notebook{padding:35px 12px 110px;border-width:5px;border-radius:24px}.layout{grid-template-columns:1fr;gap:12px}.kid{display:none}.column-area{order:1}.steps{order:2;grid-template-columns:1fr}.robot{display:none}.column{transform:scale(.8);margin:-25px}.step-panel{padding:12px}.footer{bottom:12px}.next{width:150px;height:65px}.final-banner{display:none!important}.step-title{font-size:19px}}\n\n.guide-arrow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;overflow:visible}\n.guide-path,.guide-shadow,.guide-tip{fill:none;stroke:#ed4b50;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}\n.guide-shadow{stroke:#ffb5a9;stroke-width:7;opacity:.38;filter:blur(1.5px)}\n.guide-tip{stroke-width:4.5}\n.guide-path{filter:drop-shadow(0 1px 1px #b94b4b44);animation:markerPulse 1.5s ease-in-out infinite alternate}\n@keyframes markerPulse{from{opacity:.78}to{opacity:1}}\n@media(max-width:1100px){.guide-arrow{display:none}}\n\n/* --- Визуальное оформление: яркая, аккуратная тетрадь-приключение --- */\nbody{\n  background:#dceeff;\n  color:#24476c;\n  font-family:\"Trebuchet MS\", \"Arial Rounded MT Bold\", Arial, sans-serif;\n}\n.scene{\n  padding:30px;\n  background:\n    radial-gradient(circle at 8% 16%,#fff6c9 0 5%,transparent 18%),\n    radial-gradient(circle at 92% 82%,#ffe0ed 0 5%,transparent 19%),\n    linear-gradient(135deg,#e4f5ff 0%,#f7f1ff 48%,#fff4df 100%);\n}\n.notebook{\n  width:min(1540px,100%);\n  min-height:850px;\n  padding:82px 34px 104px;\n  border:10px solid #8fc4ed;\n  border-radius:44px;\n  background-color:#fffefa;\n  background-image:\n    linear-gradient(#d9eafa 1.5px,transparent 1.5px),\n    linear-gradient(90deg,#d9eafa 1.5px,transparent 1.5px);\n  background-size:34px 34px;\n  box-shadow:0 14px 0 #69a6d7,0 26px 55px #477ca633,inset 0 0 0 5px #ffffff;\n}\n.page-heading{\n  position:absolute;\n  top:25px;\n  left:50%;\n  transform:translateX(-50%);\n  z-index:6;\n  display:flex;\n  align-items:center;\n  justify-content:center;\n  gap:14px;\n  width:max-content;\n  max-width:90%;\n  padding:9px 24px;\n  border:2px solid #f4d36d;\n  border-radius:999px;\n  background:linear-gradient(180deg,#fffdf2,#fff2bd);\n  box-shadow:0 4px 0 #e8c45b,0 7px 18px #d5ad4b33;\n  color:#5a6380;\n  font-size:17px;\n  font-weight:1000;\n  letter-spacing:1.3px;\n  text-align:center;\n}\n.heading-star{color:#f1b92f;font-size:19px}\n.rings{top:-18px;left:4%;right:4%}\n.rings i{\n  border-color:#236da7;\n  box-shadow:0 3px 4px #17436b44;\n}\n.layout{\n  grid-template-columns:minmax(170px,230px) minmax(275px,310px) minmax(410px,1fr) minmax(100px,145px);\n  gap:20px;\n  min-height:660px;\n}\n.kid .speech{\n  position:relative;\n  border:3px solid #9bc9eb;\n  border-radius:22px;\n  background:linear-gradient(180deg,#fff,#f3faff);\n  box-shadow:0 5px 0 #c8dfef,0 8px 18px #4d86b322;\n}\n.kid .speech:before{\n  content:\"\";\n  position:absolute;\n  top:-11px;left:50%;\n  width:18px;height:18px;\n  transform:translateX(-50%) rotate(45deg);\n  background:#fff;\n  border-left:2px solid #9bc9eb;\n  border-top:2px solid #9bc9eb;\n}\n.boy{filter:drop-shadow(0 9px 4px #6b789044)}\n.column{\n  border:4px solid #acd3ef;\n  border-radius:27px;\n  background:linear-gradient(145deg,#ffffffed,#f5fbffed);\n  box-shadow:0 8px 0 #c5e1f2,0 14px 26px #4d86b322;\n}\n.colhead{\n  padding:6px 8px;\n  border-radius:10px;\n  background:#f3f8ff;\n  font-size:14px;\n  letter-spacing:.4px;\n  white-space:nowrap;\n}\n.colhead.blue{background:#e7f4ff;color:#126eb6}\n.colhead.red{background:#fff0ee;color:#df4850}\n.digit{\n  border-radius:19px;\n  box-shadow:inset 0 3px 0 #ffffffbb,0 5px 0 #0000000b,0 7px 15px #4d86b315;\n}\n.blue{background:linear-gradient(145deg,#eaf7ff,#d5edff);border-color:#9ccff0}\n.red{background:linear-gradient(145deg,#fff0ed,#ffe0df);border-color:#f3b0ad}\n.empty{background:#fbfdff;border-color:#b9d8eb}\n.line{height:7px;box-shadow:0 2px 0 #17436b22}\n.steps{gap:22px;padding:8px 0}\n.step-panel{\n  border-width:4px;\n  border-radius:30px;\n  padding:20px 22px 18px;\n  box-shadow:0 7px 0 #efcfdf,0 12px 24px #a15d8320;\n}\n.step-panel.tens{\n  box-shadow:0 7px 0 #c7e2f4,0 12px 24px #4d86b322;\n}\n.step-panel.active{animation:panelGlow 1.5s ease-in-out infinite alternate}\n.step-title{font-size:22px;letter-spacing:.1px}\n.num{\n  width:51px;height:51px;\n  border:4px solid #fff;\n  box-shadow:0 0 0 3px #f2b92e,0 5px 12px #e9b72c55;\n}\n.units-demo{\n  border-width:4px;\n  box-shadow:0 0 0 4px #fff4b7,0 7px 17px #e9bd3c33;\n}\n.sq{\n  border-radius:8px;\n  box-shadow:0 3px 0 #b92e38,0 4px 8px #c63d4530;\n}\n.sum-squares{\n  border-width:3px;\n  box-shadow:0 5px 14px #e8be4033;\n}\n.ten-stack{\n  border-width:3px;\n  box-shadow:0 5px 14px #e8be4033;\n}\n.ten-stack i{border-radius:4px}\n.zero-box{box-shadow:0 4px 12px #4d9bd322}\n.robot{filter:drop-shadow(0 8px 5px #7775)}\n.footer{gap:24px}\n.next{\n  border:5px solid #fff;\n  border-radius:25px;\n  box-shadow:0 7px 0 #d58a00,0 10px 22px #e5a90044;\n  transition:transform .16s ease,filter .16s ease;\n}\n.next:hover{transform:translateY(-3px) scale(1.025);filter:brightness(1.04)}\n.next:active{transform:translateY(3px);box-shadow:0 3px 0 #d58a00}\n.dot{transition:all .2s ease}\n.final-banner{\n  border:4px solid #ffdc55;\n  box-shadow:0 7px 0 #e9c23f,0 12px 25px #e8bf3d44;\n}\n@media(max-width:1100px){\n  .notebook{padding-top:78px}\n  .layout{grid-template-columns:130px 260px minmax(360px,1fr);gap:14px}\n  .robot{display:none}\n  .page-heading{font-size:14px}\n}\n@media(max-width:760px){\n  .scene{padding:8px}\n  .notebook{padding:72px 12px 105px;min-height:100vh;border-width:5px;border-radius:25px}\n  .page-heading{top:22px;gap:7px;padding:7px 12px;font-size:11px;letter-spacing:.5px}\n  .layout{grid-template-columns:1fr;gap:14px}\n  .column{transform:scale(.9);margin:-10px}\n  .step-panel{padding:13px}\n  .step-title{font-size:18px}\n}\n\n\n.answer-slot{position:relative;width:88px;height:88px;border-radius:17px;display:grid;place-items:center;overflow:visible}\n.answer-slot>.digit{position:absolute;inset:0;width:88px;height:88px}\n.answer-slot.blue{background:transparent;border:0}\n.answer-slot.red{background:transparent;border:0}\n.input-prompt{position:absolute;inset:0;z-index:5;width:88px;height:88px;min-width:88px;min-height:88px;margin:0;padding:0;display:grid;place-items:center;border:4px solid #fff1a8;border-radius:18px;background:linear-gradient(145deg,#fff18a 0%,#ffd12e 58%,#ffbd16 100%);color:#805000;font-size:42px;font-weight:1000;box-shadow:inset 0 4px 0 #ffffffbb,0 6px 0 #d89a00,0 0 0 3px #f1bd35,0 9px 18px #d99a1744;cursor:pointer;animation:promptPulse 1.2s ease-in-out infinite alternate;transition:transform .16s ease,opacity .2s}\n.input-prompt:hover{transform:scale(1.02)}\n.input-prompt:active{transform:translateY(2px)}\n\n\n.example-progress{display:flex;gap:9px;align-items:center;justify-content:center}\n.example-progress button{width:34px;height:34px;border-radius:50%;border:2px solid #9bc8ed;background:#fff;color:#376789;font-weight:900;font-size:15px;cursor:pointer;box-shadow:0 3px 0 #c5dff1}\n.example-progress button.active{background:#ffdc43;border-color:#fff;box-shadow:0 0 0 3px #efb51e,0 4px 0 #d99a17;color:#674800}\n.next-example{border:3px solid #fff;border-radius:18px;padding:12px 20px;background:linear-gradient(#ffe95b,#ffbf19);color:#704c00;font-size:18px;font-weight:1000;box-shadow:0 5px 0 #d58a00;cursor:pointer}\n.next-example[hidden]{display:none}\n.footer{bottom:18px;flex-direction:column;gap:14px}\n\n\n/* Понятные подписи разрядов и большая кнопка перехода */\n#unitPanel .formula{font-size:clamp(20px,2vw,28px);line-height:1.25;padding:10px 8px;border-radius:16px;background:#fff;border:3px solid #ffd4d8;color:#c93648;box-shadow:0 4px 0 #f3c2c8}\n#unitPanel .formula::before{content:\"ЕДИНИЦЫ\";display:block;font-size:15px;letter-spacing:2px;color:#df4b57;margin-bottom:5px}\n.ten-formula{padding:10px 5px;border-radius:14px;background:#fff;border:3px solid #b9dcf5;line-height:1.35}\n.guide-arrow{z-index:12;overflow:visible}\n.guide-shadow{stroke:#fff;stroke-width:19;opacity:.96;filter:drop-shadow(0 3px 0 #f5d36a)}\n.guide-path{stroke:#f04472;stroke-width:11;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 0;filter:drop-shadow(0 3px 1px #9d315044)}\n.guide-tip{stroke:#f04472;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 0 #fff)}\n.next-example{width:min(390px,78vw);min-height:78px;padding:12px 22px;border:5px solid #fff;border-radius:25px;background:linear-gradient(145deg,#fff36b 0%,#ffc51f 55%,#ff9f1c 100%);color:#754400;font-size:clamp(20px,2.3vw,27px);font-weight:1000;letter-spacing:.35px;box-shadow:0 7px 0 #d58a00,0 0 0 3px #ffda4d,0 10px 22px #dc9c244d;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:13px}\n.next-example span{font-size:42px;line-height:.8;color:#fff;text-shadow:0 3px 0 #d58a00}\n.next-example.ready{animation:bigNextPulse .75s ease-in-out infinite alternate}\n.final-banner{left:50%;bottom:150px;transform:translateX(-50%);white-space:nowrap;max-width:90%;font-size:clamp(25px,3vw,39px)}\n@keyframes bigNextPulse{from{transform:scale(1);filter:brightness(1);box-shadow:0 7px 0 #d58a00,0 0 0 3px #ffda4d,0 10px 22px #dc9c244d}to{transform:scale(1.035);filter:brightness(1.12);box-shadow:0 7px 0 #d58a00,0 0 0 9px #ffda4d88,0 0 28px #ffb900}}\n@media(max-width:760px){.next-example{width:min(340px,90%);min-height:70px;font-size:20px;padding:10px 16px}.next-example span{font-size:38px}}\n\n\n.child-answer{position:absolute;inset:0;width:88px;height:88px;border:3px solid #f3bd36;border-radius:17px;background:#fffdf0;text-align:center;font:1000 62px \"Trebuchet MS\",Arial,sans-serif;color:#17436b;outline:none;box-shadow:inset 0 3px 0 #fff,0 0 0 4px #ffe58a}\n.child-answer:focus{border-color:#e8a900;box-shadow:0 0 0 6px #ffdf69aa}\n.input-prompt{z-index:8}\n\n.child-answer.correct{background:linear-gradient(145deg,#eaffec,#c9f7d2);border:4px solid #32b85a;color:#16843a;box-shadow:0 0 0 5px #8ce6a077, inset 0 2px 0 #fff;}\n.child-answer.wrong{background:#ffe2e2;border:4px solid #ed3f4b;color:#c51f32;animation:wrongShake .34s ease-in-out 1;box-shadow:0 0 0 6px #ff6b6b55,0 0 22px #ff465577;}\n@keyframes wrongShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}\n\n.top-equation{position:relative;width:max-content;max-width:90%;margin:0 auto 12px;padding:7px 24px;border:3px solid #f3d46a;border-radius:18px;background:#fffdf2;color:#176eb3;font-size:clamp(25px,3vw,36px);font-weight:1000;text-align:center;box-shadow:0 4px 0 #e8c45b,0 8px 16px #d5ad4b22;z-index:2}\n@media(max-width:760px){.top-equation{margin-bottom:6px;padding:5px 18px;font-size:26px}}\n/* Responsive layout for the column-training iframe */\n@media(max-width:1050px){\n.notebook{min-height:0;padding:28px 20px 70px;border-width:7px;border-radius:28px}\n.layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;min-height:0}\n.kid{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:16px}\n.boy{font-size:clamp(70px,12vw,120px)}\n.steps{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}\n.column-area{min-width:0}\n}\n@media(max-width:650px){\n.scene{padding:8px;align-items:flex-start}\n.notebook{width:100%;padding:24px 10px 38px;border-width:5px;border-radius:18px;box-shadow:0 8px 0 #6da9d6,0 12px 25px #5286a533}\n.rings{height:28px;top:-12px}.rings i{width:14px;height:36px;border-width:5px}\n.layout{display:flex;flex-direction:column;gap:12px;min-height:0;align-items:stretch}\n.kid{order:0;display:flex;flex-direction:row;gap:10px;align-items:center;justify-content:center}\n.boy{font-size:76px}.kid .speech{font-size:14px;padding:8px;max-width:220px}\n.column-area{order:1;width:100%;overflow-x:auto;justify-content:center;padding:4px 0}\n.column{transform:none;grid-template-columns:34px minmax(52px,74px) minmax(52px,74px);grid-template-rows:38px 72px 72px 8px 78px;padding:8px;gap:2px}\n.digit{width:clamp(50px,17vw,68px);height:clamp(50px,17vw,68px);font-size:clamp(42px,13vw,58px);border-radius:12px}\n.op{font-size:42px}.colhead{font-size:11px}\n.input-prompt{width:clamp(50px,17vw,68px);height:clamp(50px,17vw,68px);min-width:0;min-height:0;font-size:30px;border-radius:12px}\n.steps{order:2;width:100%;grid-template-columns:1fr;gap:12px;padding:4px 0}\n.step-panel{padding:12px;border-width:3px;border-radius:20px}.step-title{font-size:18px;margin-bottom:10px}\n.num{width:42px;height:42px;font-size:27px;border-width:3px}.units-demo,.ten-demo{flex-wrap:wrap;gap:6px}\n.step-panel p{font-size:15px}.page-heading h2{font-size:clamp(20px,6vw,28px)}.page-heading{font-size:12px}\n.guide-arrow{display:none!important}\n}\n@media(max-width:360px){.scene{padding:4px}.notebook{padding-left:7px;padding-right:7px}.column{grid-template-columns:28px 54px 54px;padding:6px}.digit{width:50px;height:50px;font-size:42px}.input-prompt{width:50px;height:50px;font-size:26px}.boy{font-size:62px}}\n</style></head>\n<body>\n<div class=\"scene\"><main class=\"notebook\">\n<div class=\"rings\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>\n<div class=\"page-heading\"><span class=\"heading-star\">✦</span><span>МАТЕМАТИЧЕСКОЕ ПРИКЛЮЧЕНИЕ</span><span class=\"heading-star\">✦</span></div>\n<div class=\"top-equation\" id=\"topEquation\">12 + 5 = ?</div>\n<div class=\"layout\">\n <svg class=\"guide-arrow\" id=\"guideArrow\" role=\"img\" aria-label=\"Стрелка от номера первого действия к заголовку Единицы\" preserveAspectRatio=\"none\" aria-hidden=\"true\">\n  <path class=\"guide-shadow\" id=\"guideShadow\" d=\"\"/>\n  <path class=\"guide-path\" id=\"guidePath\" d=\"\"/>\n  <path class=\"guide-tip\" id=\"guideTip\" d=\"\"/>\n </svg>\n\n <div class=\"kid\"><div class=\"boy\">👦🏻</div><div class=\"speech\" id=\"boySpeech\">Давай вместе!</div></div>\n <div class=\"column-area\">\n  <div class=\"column\">\n   <div></div><div class=\"colhead blue\">ДЕСЯТКИ</div><div class=\"colhead red\">ЕДИНИЦЫ</div>\n   <div></div><div class=\"digit blue\" id=\"firstTens\">1</div><div class=\"digit red\" id=\"firstUnits\">2</div>\n   <div class=\"op\">+</div><div class=\"digit empty\" id=\"secondTens\"></div><div class=\"digit red\" id=\"secondUnits\">5</div>\n   <div></div><div class=\"line\"></div>\n   <div></div><div class=\"answer-slot blue\" id=\"tensSlot\"><div class=\"digit blue answer hidden-digit\" id=\"tensAnswer\">1</div></div><div class=\"answer-slot red\" id=\"unitsSlot\"><div class=\"digit red answer hidden-digit\" id=\"unitsAnswer\">7</div><button class=\"input-prompt\" id=\"answerButton\" type=\"button\" aria-label=\"Нажми, чтобы вписать 7\">✎</button></div>\n  </div>\n </div>\n <div class=\"steps\">\n  <section class=\"step-panel active\" id=\"unitPanel\">\n   <div class=\"step-title\"><span class=\"num\">1</span> Складываем единицы</div>\n   <div class=\"units-demo\" id=\"unitOval\">\n    <div class=\"squares\" id=\"twoSquares\"><i class=\"sq\"></i><i class=\"sq\"></i></div>\n    <span class=\"plus\">+</span>\n    <div class=\"squares\" id=\"fiveSquares\"><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i></div>\n   </div>\n   <div class=\"arrow\">↓</div>\n   <div class=\"sum-squares\" id=\"sevenSquares\"><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i><i class=\"sq\"></i></div>\n   <div class=\"formula\" id=\"unitFormula\">2 единицы + 5 единиц = 7 единиц</div>\n  </section>\n  <section class=\"step-panel tens inactive\" id=\"tensPanel\">\n   <div class=\"step-title\"><span class=\"num\">2</span> Складываем десятки</div>\n   <div class=\"ten-demo\">\n    <div class=\"ten-stack\" aria-label=\"Ровно десять квадратиков\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>\n    <span class=\"plus\">+</span><div class=\"zero-box\">0</div><span class=\"plus\">=</span>\n    <div class=\"ten-stack\" aria-label=\"Ровно десять квадратиков\"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>\n   </div>\n   <div class=\"ten-formula\" id=\"tenFormula\">1 десяток + 0 десятков = 1 десяток</div>\n  </section>\n </div>\n <div class=\"robot\">🤖</div>\n</div>\n<div class=\"final-banner\" id=\"finalBanner\">12 + <b>5</b> = <b>17</b></div>\n<div class=\"footer\"><div class=\"example-progress\" id=\"exampleProgress\"></div><button class=\"next-example\" id=\"nextExample\" type=\"button\" hidden>СЛЕДУЮЩИЙ ПРИМЕР <span aria-hidden=\"true\">➜</span></button></div>\n</main></div>\n<script>\nconst examples=[\n {a:12,b:5},\n {a:13,b:2},\n {a:14,b:2},\n {a:15,b:3},\n {a:16,b:2},\n {a:11,b:4},\n {a:10,b:6}\n];\nlet exampleIndex=0, stage=0, finishSent=false;\nconst prompt=document.getElementById('answerButton');\nconst ua=document.getElementById('unitsAnswer');\nconst ta=document.getElementById('tensAnswer');\nconst unit=document.getElementById('unitPanel');\nconst ten=document.getElementById('tensPanel');\nconst speech=document.getElementById('boySpeech');\nconst tensSlot=document.getElementById('tensSlot');\nconst unitsSlot=document.getElementById('unitsSlot');\n\nfunction drawGuideArrow(){\n const layout=document.querySelector('.layout'),svg=document.getElementById('guideArrow');\n const action=document.getElementById('unitFormula'),label=document.querySelector('.colhead.red');\n if(!layout||!svg||!action||!label)return;\n const base=layout.getBoundingClientRect(),a=action.getBoundingClientRect(),b=label.getBoundingClientRect();\n svg.setAttribute('viewBox',`0 0 ${layout.clientWidth} ${layout.clientHeight}`);\n const sx=a.left-base.left+a.width*.12,sy=a.top-base.top+a.height*.5;\n const ex=b.left-base.left+b.width*.52,ey=b.top-base.top+b.height*.52;\n const dx=ex-sx,dy=ey-sy;\n const d=`M ${sx} ${sy} C ${sx+dx*.20} ${sy+dy*.12-34}, ${sx+dx*.76} ${ey-dy*.16-24}, ${ex} ${ey}`;\n document.getElementById('guidePath').setAttribute('d',d);\n document.getElementById('guideShadow').setAttribute('d',d);\n document.getElementById('guideTip').setAttribute('d',`M ${ex-17} ${ey-15} Q ${ex-7} ${ey-5}, ${ex} ${ey} Q ${ex-9} ${ey+5}, ${ex-17} ${ey+15}`);\n}\nfunction makeSquares(count){\n return Array.from({length:count},()=>'<i class=\"sq\"></i>').join('');\n}\nfunction makeTenStack(){\n return '<div class=\"ten-stack\" aria-label=\"Один десяток\">'+Array.from({length:10},()=>'<i></i>').join('')+'</div>';\n}\nfunction unitWord(n){return n%10===1&&n%100!==11?'единица':n%10>=2&&n%10<=4&&!(n%100>=12&&n%100<=14)?'единицы':'единиц';}\nfunction tenWord(n){return n%10===1&&n%100!==11?'десяток':n%10>=2&&n%10<=4&&!(n%100>=12&&n%100<=14)?'десятка':'десятков';}\nfunction updateExample(){\n const ex=examples[exampleIndex],a=ex.a,b=ex.b,sum=a+b;\n document.getElementById('topEquation').textContent=`${a} + ${b} = ?`;\n const aT=Math.floor(a/10),aU=a%10,bT=Math.floor(b/10),bU=b%10;\n document.getElementById('firstTens').textContent=aT||'';\n document.getElementById('firstUnits').textContent=aU;\n document.getElementById('secondTens').textContent=bT||'';\n document.getElementById('secondUnits').textContent=bU;\n ua.textContent=sum%10;ta.textContent=Math.floor(sum/10);\n document.getElementById('twoSquares').innerHTML=makeSquares(aU);\n document.getElementById('fiveSquares').innerHTML=makeSquares(bU);\n document.getElementById('sevenSquares').innerHTML=makeSquares(aU+bU);\n document.getElementById('unitFormula').textContent=exampleIndex===0?`${aU} ${unitWord(aU)} + ${bU} ${unitWord(bU)} = ${aU+bU} ${unitWord(aU+bU)}`:`${aU} ${unitWord(aU)} + ${bU} ${unitWord(bU)}`;\n const tensDemo=document.querySelector('.ten-demo');\n if(aT+bT===0){\n  tensDemo.innerHTML='<div class=\"zero-box\">0</div><span class=\"plus\">+</span><div class=\"zero-box\">0</div><span class=\"plus\">=</span><div class=\"zero-box\">0</div>';\n }else{\n  const left=aT?makeTenStack():'<div class=\"zero-box\">0</div>';\n  const right=bT?makeTenStack():'<div class=\"zero-box\">0</div>';\n  let result=''; for(let i=0;i<aT+bT;i++) result+=makeTenStack();\n  tensDemo.innerHTML=left+`<span class=\"plus\">+</span>`+right+`<span class=\"plus\">=</span>`+result;\n }\n document.getElementById('tenFormula').textContent=`${aT} ${tenWord(aT)} + ${bT} ${tenWord(bT)} = ${aT+bT} ${tenWord(aT+bT)}`;\n document.getElementById('finalBanner').innerHTML=`${a} + <b>${b}</b> = <b>${sum}</b>`;\n document.querySelector('.page-heading span:nth-child(2)').textContent=`ПРИМЕР ${exampleIndex+1} ИЗ 7`;\n document.getElementById('exampleProgress').innerHTML=examples.map((_,i)=>`<button type=\"button\" data-example=\"${i}\" class=\"${i===exampleIndex?'active':''}\" aria-label=\"Пример ${i+1}\">${i+1}</button>`).join('');\n document.querySelectorAll('[data-example]').forEach(btn=>btn.addEventListener('click',()=>{\n  exampleIndex=Number(btn.dataset.example);stage=0;finishSent=false;clearChildInputs();updateExample();render();\n }));\n}\n\nfunction expectedAnswer(kind){\n const ex=examples[exampleIndex],sum=ex.a+ex.b;\n return kind==='units'?sum%10:Math.floor(sum/10);\n}\nfunction validateChildInput(input,kind){\n const expected=expectedAnswer(kind);\n const value=input.value.trim();\n input.classList.remove('wrong','correct');\n if(value==='')return false;\n if(Number(value)===expected){\n   input.classList.add('correct');\n   input.readOnly=true;\n   input.setAttribute('aria-label',kind==='units'?'Верно: ответ единиц зафиксирован':'Верно: ответ десятков зафиксирован');\n   speech.textContent=kind==='units'?'Правильно! Единицы готовы. Нажми на золотую кнопку!':'Отлично! Десятки тоже верно!';\n   return true;\n }\n input.classList.add('wrong');\n input.setAttribute('aria-invalid','true');\n speech.textContent=kind==='units'?'Не совсем! Попробуй ещё раз — проверь единицы.':'Не совсем! Проверь количество десятков.';\n input.select();\n return false;\n}\nfunction addChildInput(slot,id,label,kind){\n const old=slot.querySelector('.child-answer'); if(old) old.remove();\n const input=document.createElement('input');\n input.className='child-answer'; input.id=id; input.type='text'; input.inputMode='numeric';\n input.maxLength=2; input.autocomplete='off'; input.setAttribute('aria-label',label);\n input.addEventListener('input',()=>{\n   input.value=input.value.replace(/[^0-9]/g,'').slice(0,2);\n   input.classList.remove('wrong','correct');\n   input.removeAttribute('aria-invalid');\n   if(input.value.length===String(expectedAnswer(kind)).length && Number(input.value)===expectedAnswer(kind)){\n     validateChildInput(input,kind);\n     if(kind==='tens')render();\n   }else if(input.value.length>=String(expectedAnswer(kind)).length){\n     input.classList.remove('correct');input.classList.add('wrong');\n     speech.textContent=kind==='units'?'Неверно! Попробуй ещё раз.':'Неверно! Попробуй ещё раз.';\n     if(kind==='tens')render();\n   }\n });\n input.addEventListener('keydown',e=>{if(e.key==='Enter'){if(validateChildInput(input,kind)&&kind==='tens')render();}});\n slot.appendChild(input);\n requestAnimationFrame(()=>input.focus());\n}\nfunction clearChildInputs(){document.querySelectorAll('.child-answer').forEach(x=>x.remove());}\n\nfunction render(){\n const practice=exampleIndex>0;\n document.getElementById('guideArrow').style.display=stage===0?'block':'none';\n unit.classList.toggle('active',stage===0);unit.classList.toggle('inactive',stage!==0);\n ten.classList.toggle('active',stage===1);ten.classList.toggle('inactive',stage!==1);\n ua.classList.toggle('hidden-digit',practice||stage===0);ua.classList.toggle('show',!practice&&stage>0);\n ta.classList.toggle('hidden-digit',practice||stage!==2);ta.classList.toggle('show',!practice&&stage===2);\n document.getElementById('finalBanner').style.display=(!practice&&stage===2)?'block':'none';\n const next=document.getElementById('nextExample');\n const tensInput=document.getElementById('childTensAnswer');\n const unitInputNow=document.getElementById('childUnitsAnswer');\n const practiceComplete=!practice||(stage===2&&tensInput&&tensInput.classList.contains('correct')&&unitInputNow&&unitInputNow.classList.contains('correct'));\n next.hidden=stage!==2||exampleIndex===6||!practiceComplete;\n next.classList.toggle('ready',stage===2&&exampleIndex!==6&&practiceComplete);\n if(practice&&stage===2){\n   document.getElementById('finalBanner').style.display=practiceComplete?'block':'none';\n   if(exampleIndex===examples.length-1&&practiceComplete&&!finishSent){finishSent=true;window.parent.postMessage({type:'math-course-finished'},'*');}\n }\n if(!practice){\n   prompt.style.display=stage===2?'none':'grid';\n   if(stage===0){unitsSlot.appendChild(prompt);prompt.classList.remove('moving');prompt.setAttribute('aria-label','Нажми, чтобы показать ответ единиц');speech.textContent='Сначала складываем единицы!';}\n   else if(stage===1){tensSlot.appendChild(prompt);prompt.classList.add('moving');prompt.setAttribute('aria-label','Нажми, чтобы показать ответ десятков');speech.textContent='Теперь складываем десятки!';}\n   else speech.textContent=exampleIndex===6?'Все примеры решены!':'Пример решён! Нажми большую стрелку!';\n }else{\n   if(stage===0){\n     prompt.style.display='grid';unitsSlot.appendChild(prompt);prompt.classList.remove('moving');\n     prompt.setAttribute('aria-label','Нажми, чтобы перейти к ответу десятков');\n     speech.textContent='Впиши ответ в единицы, затем нажми золотую кнопку!';\n   }else if(stage===1){\n     prompt.style.display='grid';tensSlot.appendChild(prompt);prompt.classList.add('moving');\n     prompt.setAttribute('aria-label','Нажми, чтобы убрать кнопку и открыть ответ десятков');\n     speech.textContent='Теперь впиши ответ в десятки и нажми кнопку!';\n   }else{\n     prompt.style.display='none';speech.textContent='Проверь оба ответа!';\n   }\n }\n if(stage===0)requestAnimationFrame(drawGuideArrow);\n}\nprompt.addEventListener('click',()=>{\n if(exampleIndex===0){if(stage<2){stage++;render();}return;}\n if(stage===0){\n   addChildInput(unitsSlot,'childUnitsAnswer','Впиши ответ единиц','units');\n   stage=1;render();return;\n }\n if(stage===1){\n   const unitInput=document.getElementById('childUnitsAnswer');\n   if(!unitInput||unitInput.value===''){speech.textContent='Сначала впиши ответ единиц!';if(unitInput)unitInput.focus();return;}\n   if(!unitInput.classList.contains('correct')){validateChildInput(unitInput,'units');unitInput.focus();return;}\n   prompt.remove();\n   addChildInput(tensSlot,'childTensAnswer','Впиши ответ десятков','tens');\n   stage=2;render();\n }\n});\ndocument.getElementById('nextExample').addEventListener('click',()=>{\n if(exampleIndex<6){exampleIndex++;stage=0;finishSent=false;clearChildInputs();updateExample();render();}\n});\nwindow.addEventListener('resize',()=>{if(stage===0)drawGuideArrow();});\nupdateExample();render();\n<\/script></body></html>";
+const columnFrame=document.getElementById('columnFrame');
+document.getElementById('goColumn').addEventListener('click',()=>{
+ document.getElementById('level2Content').style.display='none';
+ document.getElementById('columnModule').style.display='block';
+ columnFrame.srcdoc=columnDocument;
+ window.scrollTo({top:0,behavior:'smooth'});
+});
+window.addEventListener('message',event=>{
+ if(event.source===columnFrame.contentWindow && event.data && event.data.type==='math-course-finished'){
+  document.getElementById('columnModule').style.display='none';
+  document.getElementById('courseFinish').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+ }
+});
+document.getElementById('restartCourse').addEventListener('click',()=>location.reload());
+</script></body></html>
